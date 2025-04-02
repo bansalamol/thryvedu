@@ -6,12 +6,13 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
 
 from django.contrib import messages
 
 
 def index(request):
-    return render(request, "index.html")
+    return render(request, "frontend/index.html")
 
 
 def register(request):
@@ -25,10 +26,13 @@ def register(request):
             messages.error(request, "There was an error during registration.")
     else:
         form = UserCreationForm()
-    return render(request, "register.html", {"form": form})
+    return render(request, "auth/register.html", {"form": form})
 
 
 def user_login(request):
+    if request.user.is_authenticated:
+        return redirect("dashboard")
+    
     if request.method == "POST":
         form = AuthenticationForm(data=request.POST)
         if form.is_valid():
@@ -39,7 +43,7 @@ def user_login(request):
     else:
         form = AuthenticationForm()
 
-    return render(request, "login.html", {"form": form})
+    return render(request, "auth/login.html", {"form": form})
 
 
 def about_us(request):
@@ -48,11 +52,12 @@ def about_us(request):
         "description": "Edu Portal is an innovative platform for online learning.",
         "team_members": ["Alice", "Bob", "Charlie", "David"],
     }
-    return render(request, "about.html", context)
+    return render(request, "frontend/about.html", context)
 
 
+@login_required(login_url="login")
 def dashboard_view(request):
-    return render(request, "dashboard.html")
+    return render(request, "backend/dashboard.html")
 
 
 def user_logout(request):
